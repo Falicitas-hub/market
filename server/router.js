@@ -2,11 +2,11 @@ const express = require("express");
 const router = express.Router();
 const sqlClient = require("./config")
 const jwt = require("jsonwebtoken")
-
+//注册
 router.post("/register", (req, res) => {
-    const { id, username, password, email } = req.body;
-    const sql = "insert into user values(?,?,?,?)";
-    const arr = [id, username, password, email];
+    const { username, password, email } = req.body;
+    const sql = "insert into user (username,password,email) values(?,?,?)";
+    const arr = [username, password, email];
     sqlClient(sql, arr, result => {
         if (result.affectedRows > 0) {
             res.send(JSON.stringify({
@@ -28,7 +28,6 @@ router.post("/login", (req, res) => {
     const arr = [username, password];
     sqlClient(sql, arr, result => {
         if (result.length > 0) {
-
             let token = jwt.sign({
                 username,
                 id: result[0].id

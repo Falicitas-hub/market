@@ -37,6 +37,9 @@
             <el-form-item label="用户名" prop="username">
               <el-input v-model="registerForm.username"></el-input>
             </el-form-item>
+            <el-form-item label="邮箱" prop="email">
+              <el-input v-model="registerForm.email"></el-input>
+            </el-form-item>
             <el-form-item label="密码" prop="password">
               <el-input
                 v-model="registerForm.password"
@@ -51,7 +54,7 @@
             </el-form-item>
             <el-form-item label-width="0px">
               <el-button type="primary" @click="submitForm('registerForm')">
-                登录
+                注册
               </el-button>
             </el-form-item>
           </el-form>
@@ -62,6 +65,8 @@
 </template>
 
 <script>
+import api from "../api";
+import { mapMutations } from "vuex";
 export default {
   data() {
     var validateUserName = (rule, value, callback) => {
@@ -104,25 +109,70 @@ export default {
         username: "",
         password: "",
         configurePassword: "",
+        email: "",
       },
     };
   },
+  mounted() {
+    this.enterKeyUp();
+  },
+  destroyed() {
+    this.enterKeyUpDestroyed();
+  },
   methods: {
+    ...mapMutations("login", ["setUser"]),
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
           if (formName === "loginForm") {
             //登录
-            console.log(this.loginForm);
+            api.login(this.loginForm).then((res) => {
+              if (res.data.status == 200) {
+                this.setUser(res.data);
+                localStorage.setItem("ice_wine", JSON.stringify(res.data));
+                this.$router.push("/");
+              } else {
+                this.$message.error("登陆失败");
+              }
+            });
           } else if (formName === "registerForm") {
             //注册
+            api.register(this.registerForm).then((res) => {
+              if (res.data.status == 200) {
+                this.$message.success("注册成功");
+                this.currentIndex = "login";
+              } else {
+                this.$message.error("注册失败");
+              }
+            });
             console.log(this.registerForm);
           }
+          this.$refs[formName].resetFields();
         } else {
           this.$message.error("请确认信息是否填写正确");
           return;
         }
       });
+    },
+    enterKeyUp() {
+      document.addEventListener("keyup", this.enterKey);
+    },
+    enterKeyUpDestroyed() {
+      document.removeEventListener("keyup", this.enterKey);
+    },
+    enterKey(event) {
+      const code = event.keyCode
+        ? event.keyCode
+        : event.which
+        ? event.which
+        : event.charCode;
+      if (code == 13) {
+        if (this.currentIndex == "login") {
+          this.submitForm("loginForm");
+        } else if (this.currentIndex == "register") {
+          this.submitForm("registerForm");
+        }
+      }
     },
   },
 };

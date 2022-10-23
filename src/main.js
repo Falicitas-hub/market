@@ -5,6 +5,7 @@ import store from './store'
 import './plugins/element.js'
 import './assets/css/common.css'
 import './router/permission.js'
+import './utils/init.js'
 
 Vue.config.productionTip = false
 
